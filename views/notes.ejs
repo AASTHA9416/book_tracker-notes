@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/main.css">
+    <title>Notes</title>
+    </head>
+<body>
+    <%- include("partials/header.ejs") %>
+    <div class="container">
+        <a class="back-link" href="/">← Back</a>
+        <div class="notes-card">
+            <h1 class="heading">Notes</h1>
+            <div><%= notes %></div>
+        </div>
+    </div>
+    <%- include("partials/footer.ejs") %>
+</body>
+</html>
+
+
+

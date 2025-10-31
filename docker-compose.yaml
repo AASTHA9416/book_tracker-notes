@@ -1,0 +1,24 @@
+
+services:
+  books_keeper:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      - DOCKER_ENV=true  # This turns on the "smart" logic in index.js option-1
+      - DB_HOST=host.docker.internal # This overrides DB_HOST from the .env file option-2
+    restart: always
+    container_name: tracker
+    networks:
+      - database_network
+
+# Define networks section at the root level
+networks:
+  database_network:
+    name: database_network  # This will create or use an existing network with this name
+    driver: bridge         # Using bridge driver for local development
+  

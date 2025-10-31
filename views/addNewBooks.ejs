@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="main.css">
+    <title>Document</title>
+</head>
+<body>
+    <%- include("partials/header.ejs") %>
+    <div class="container">
+    <!-- This EJS conditional checks if the 'edit' variable exists in the backend -->
+    <% if (locals.edit) { %>
+        <!-- If in edit mode, the form action points to an update route with the book's ID -->
+        <form action="/updateBook" method="post" class="book-form">
+            <input type="hidden" name="bookId" value="<%= edit.id %>">
+            <h1 class="heading">Edit Book</h1>
+    <% } else { %>
+        <!-- If not in edit mode, the form action is for adding a new book -->
+        <form action="/newBook" method="post" class="book-form">
+            <h1 class="heading">Add New Book</h1>
+    <% } %>
+
+    <label for="title">Title</label>
+    <input type="text" id="title" name="title" placeholder="Enter book title" value="<%= locals.edit ? edit.title : '' %>">
+    
+    <label for="author">Author</label>
+    <input type="text" id="author" name="author" placeholder="Who wrote the book" value="<%= locals.edit ? edit.author : '' %>">
+    
+    <label for="about">About</label>
+    <input type="text" id="about" name="about" placeholder="Brief description" value="<%= locals.edit ? edit.about : '' %>">
+    
+    <label for="notes">Notes</label>
+    <textarea id="notes" name="notes" placeholder="Your notes or key takeaways" rows="4"><%= locals.edit ? edit.notes : '' %></textarea>
+    
+    <label for="ratings">Rate the book</label>
+    <input type="text" name="ratings" id="ratings" placeholder="e.g. 4.5" value="<%= locals.edit ? edit.ratings : '' %>">
+    
+    <label for="key">Key</label>
+    <input type="text" placeholder="ISBN, OCLC, LCCN, OLID or ID" id="key" name="key" value="<%= locals.edit ? edit.key : '' %>">
+    
+    <label for="value">Value</label>
+    <input type="text" placeholder="Enter the key's value" id="value" name="value" value="<%= locals.edit ? edit.value : '' %>">
+
+    <div class="actions sticky-actions">
+        <button class="btn secondary" type="submit"><%= locals.edit ? 'Update' : 'Submit' %></button>
+    </div>
+    </form>
+    </div>
+    <%- include("partials/footer.ejs") %>
+</body>
+</html>

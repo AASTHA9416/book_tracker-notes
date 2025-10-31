@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="main.css">
+    <title>Document</title>
+</head>
+<body>
+    <%- include("partials/header.ejs") %>
+    <div class="container">
+    <% /* Determine which user should be selected: prefer activeUserId, fallback to first user */ %>
+    <% const currentId = (typeof activeUserId !== 'undefined' && activeUserId !== null)
+        ? activeUserId
+        : (user && user.length ? user[0].id : null); %>
+    <form action="/add" method="post" class="user_list_form">
+        <select name="current_user" id="">
+                <% /* Mark option selected when it matches the current active user */ %>
+                <% for(let i=0;i<user.length;i++){  %>  
+                <option value="<%= user[i].id %>" <%= (currentId !== null && user[i].id === currentId) ? 'selected' : '' %> ><%= user[i].name %></option>
+                <% } %>
+        </select>
+        <input type="text" placeholder="add new user" name="newUser" >
+        <button class="btn" type="submit" >+</button>
+        <button class="btn secondary" formaction="/addBook"  type="submit">Add new Book</button>
+    </form> 
+  
+
+    <div id="books">
+    <% book.forEach(function(book){ %>
+        <form action="/books" method="post" class="book-card">
+            <img src="<%= book.url %>" alt="Book Cover" loading="lazy" />
+            <div class="meta">
+                <div class="label">Title</div>
+                <div class="value"><%= book.title %></div>
+                <div class="label">Author</div>
+                <div class="value"><%= book.author %></div>
+                <div class="label">About</div>
+                <div class="value"><%= book.about %></div>
+                <div class="label">Date</div>
+                <div class="value"><%= book.curr_date %></div>
+                <div class="label">Ratings</div>
+                <div class="value"><%= book.ratings %></div>
+                <div class="label">Key</div>
+                <div class="value"><%= book.key %> = <%= book.value %></div>
+            </div>
+            <div class="actions">
+                <button class="btn" formaction="/notes" name="book_id" value="<%= book.id %>">notes</button>
+                <button class="btn secondary" formaction="/edit" name="book_id" value="<%= book.id %>">edit</button>
+                <button class="btn danger" formaction="/delete" name="book_id" value="<%= book.id %>">delete</button>
+            </div>
+        </form>
+    <% }) %>
+    </div>
+
+
+
+
+  
+
+    </div>
+    <%- include("partials/footer.ejs") %>
+        <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const userSelect = document.querySelector('select[name="current_user"]');
+            if (userSelect && userSelect.length) {
+                userSelect.addEventListener('change', async (event) => {
+                    const selectedUserId = event.target.value; // cursor-ai make this change
+                    try {
+                        await fetch('/changeUser', {
+                            method: 'post',
+                            headers: {
+                                'content-type': 'application/json',
+                            },
+                            body: JSON.stringify({ userId: selectedUserId }),
+                        });
+                        window.location.reload(); // cursor-ai make this change: refresh UI after switching user
+                    } catch (error) {
+                        alert(error.message);
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

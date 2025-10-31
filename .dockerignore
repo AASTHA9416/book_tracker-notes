@@ -1,0 +1,37 @@
+node_modules
+npm-debug.log
+.env
+Dockerfile
+/.git
+/.gitignore
+node_modules
+npm-debug.log
+.env
+Dockerfile
+/.git
+/.gitignore
+*.log
+npm-debug.log
+*.log
+
+# Git
+.git
+.gitignore
+
+# OS / Editor files
+.DS_Store
+.vscode/
+.idea/
+
+# Build / coverage
+dist/
+build/
+coverage/
+
+# Temp files
+tmp/
+*.sqlite
+*.sqlite3
+
+# Optional: exclude local test data if you don't want it in the image
+# countries.csv
