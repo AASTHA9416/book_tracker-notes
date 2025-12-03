@@ -1,3 +1,15 @@
 <div class="header">
-    <h1>YOUR and YOUR's family BOOKs track with notes</h1>
+    <div style="display: flex; justify-content: space-between; align-items: center; max-width: 1400px; margin: 0 auto; padding: 0 20px;">
+        <h1 style="margin: 0;">📚 Family Book Tracker & Notes</h1>
+        <% if (locals.isAuthenticated && locals.user) { %>
+        <div style="display: flex; align-items: center; gap: 16px;">
+            <span style="color: #c4b5fd; font-size: 14px; font-weight: 600;">
+                👤 <%= user.name %>
+            </span>
+            <a href="/logout" style="padding: 8px 20px; background: rgba(239, 68, 68, 0.2); color: #fca5a5; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 14px; border: 1px solid rgba(239, 68, 68, 0.3); transition: all 0.3s ease;">
+                🚪 Logout
+            </a>
+        </div>
+        <% } %>
+    </div>
 </div>

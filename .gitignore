@@ -70,6 +70,12 @@ web_modules/
 .env.*
 !.env.example
 
+# Setup and migration files (already documented in README)
+OAUTH_SETUP.md
+QUICK_START.md
+database_migration.sql
+run-migration.bat
+
 # parcel-bundler cache (https://parceljs.org/)
 .cache
 .parcel-cache

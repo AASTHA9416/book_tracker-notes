@@ -1,60 +1,43 @@
-Book Tracker & Notes App
+# 📚 Family Book Tracker & Notes
 
-This is a full-stack web application that allows multiple users to track the books they have read, assign ratings, and write personal notes for each book. It uses the OpenLibrary API to fetch book cover images automatically.
+A modern web app to track your reading journey with Google OAuth authentication and a beautiful dark theme.
 
-The application allows for switching between different user accounts, and each user has their own private list of books.
+## ✨ Features
 
-💻 Tech Stack
+- 🔐 **Google OAuth** - Secure sign-in with Google
+- 📖 **Book Library** - Add, edit, and track books
+- 👨‍👩‍👧‍👦 **Family Sharing** - View all books but edit only your own
+- 🌙 **Dark Theme** - Modern glassmorphism UI
+- 📝 **Personal Notes** - Write detailed notes for each book
+- ⭐ **Star Ratings** - Rate books 1-5 stars
+- 📚 **Auto Covers** - Fetches book covers from OpenLibrary API
 
-Backend: Node.js, Express.js
+## 🚀 Quick Start
 
-Database: PostgreSQL (using the pg package)
+### Prerequisites
+- Node.js 18+ ([Download](https://nodejs.org/))
+- PostgreSQL 14+ ([Download](https://www.postgresql.org/download/))
 
-Frontend: EJS (Embedded JavaScript templates)
+### 1. Clone & Install
+```bash
+git clone https://github.com/AASTHA9416/book_tracker-notes.git
+cd book_tracker-notes
+npm install
+```
 
-API: OpenLibrary Covers API
-
-✨ Features
-
-Multi-User Accounts: Add new users and switch between them to see personal book lists.
-
-Book CRUD:
-
-Create: Add new books with title, author, rating, and a summary.
-
-Read: View all books for the currently active user.
-
-Update: Edit all details of an existing book.
-
-Delete: Remove a book from the list.
-
-Personal Notes: Add, view, and update detailed notes for each book.
-
-Dynamic Book Covers: Automatically fetches and displays book covers from the OpenLibrary API based on the book's title and author.
-
-Star Ratings: Assign a 1-5 star rating to each book.
-
-🚀 How to Run This Project
-
-1. Database Setup (Crucial Step)
-
-This project requires a running PostgreSQL server.
-
-Create a Database:
-Open psql or your preferred database GUI (like pgAdmin) and create a new database.
-
+### 2. Database Setup
+```sql
+-- Create database
 CREATE DATABASE books;
 
-
-Connect to your new database (\c books) and create the required tables. Note: The notes table uses ON DELETE CASCADE so that when a book is deleted, its notes are automatically deleted too.
-
--- Create the users table first
+-- Connect to database (\c books) and run:
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
-    name VARCHAR(100) UNIQUE NOT NULL
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(255) UNIQUE,
+    google_id VARCHAR(255) UNIQUE
 );
 
--- Create the main books table, which references the users table
 CREATE TABLE books_studied (
     id SERIAL PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
@@ -68,49 +51,96 @@ CREATE TABLE books_studied (
     user_id INTEGER REFERENCES users(id) ON DELETE CASCADE
 );
 
--- Create the notes table, which references the books_studied table
 CREATE TABLE notes (
     id SERIAL PRIMARY KEY,
     notes TEXT,
     book_id INTEGER REFERENCES books_studied(id) ON DELETE CASCADE
 );
 
+CREATE INDEX idx_users_google_id ON users(google_id);
+CREATE INDEX idx_users_email ON users(email);
+```
 
-2. Project Setup
+### 3. Google OAuth Setup
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create project → Enable Google+ API → Create OAuth 2.0 credentials
+3. Set redirect URI: `http://localhost:3000/auth/google/callback`
+4. Copy Client ID and Client Secret
 
-Clone the Repository:
+### 4. Configure Environment
+```bash
+cp .env.example .env
+```
 
-git clone [https://github.com/AASTHA9416/book_tracker-notes.git](https://github.com/AASTHA9416/book_tracker-notes.git)
-cd book_tracker-notes
+Edit `.env`:
+```env
+# Database
+DB_USER=postgres
+DB_PASSWORD=your_password_here
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=books
 
+# Google OAuth (from step 3)
+GOOGLE_CLIENT_ID=your-client-id-here.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=your-client-secret-here
+GOOGLE_CALLBACK_URL=http://localhost:3000/auth/google/callback
 
-Install Dependencies:
+# Session Secret (random string)
+SESSION_SECRET=your-very-random-secret-string-here
 
-npm install express body-parser pg ejs
+# Server
+PORT=3000
+NODE_ENV=development
+```
 
+### 5. Run the App
+```bash
+npm start
+```
 
-Update Database Credentials:
-Open index.js and update the db.Client object with your own PostgreSQL user, host, database name, and password.
+Visit **http://localhost:3000** and sign in with Google! 🎉
 
-const db = new pg.Client({
-  user: "your_postgres_user",
-  host: "localhost",
-  database: "books", // The database you created
-  password: "your_password",
-  port: 5432,
-});
+## 🐳 Docker (Alternative)
 
+```bash
+# Build and run
+docker compose up
 
-Run the Server:
+# Stop
+docker compose down
+```
 
-node index.js
+## 🛠️ Tech Stack
 
+- **Backend**: Node.js, Express.js, Passport.js
+- **Database**: PostgreSQL
+- **Frontend**: EJS, Custom CSS (Dark Theme)
+- **Auth**: Google OAuth 2.0
+- **API**: OpenLibrary Covers API
 
-Open the App:
-Your server is now running. Open your browser and go to:
-http://localhost:3000
+## 🐛 Troubleshooting
 
-there is also files for docker 
-to build image : docker compose build
-to build and run container: docker compose up
-to delete and stop container: docker compose down
+**"redirect_uri_mismatch"**
+- Check Google Console redirect URI matches exactly
+
+**"Missing GOOGLE_CLIENT_ID"**
+- Ensure `.env` file exists and is configured
+- Restart server after editing
+
+**Database Connection Failed**
+- Verify PostgreSQL is running
+- Check credentials in `.env`
+
+**Can't Access Pages**
+- Sign in via `/login` first (authentication required)
+
+## 👤 Author
+
+**Aastha Bansal**
+- 📧 [aasthabansal741@gmail.com](mailto:aasthabansal741@gmail.com)
+- 💻 [@AASTHA9416](https://github.com/AASTHA9416)
+
+---
+
+**Built with 💜 by Aastha Bansal**

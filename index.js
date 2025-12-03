@@ -1,6 +1,9 @@
 import "dotenv/config"; // Load environment variables from .env
 import express from "express";
 import pg from "pg";
+import session from "express-session";
+import passport from "passport";
+import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 
 let user_id = parseInt(process.env.ACTIVE_USER_ID || "1", 10);
 
@@ -29,39 +32,138 @@ const port = parseInt(process.env.PORT || "3000", 10);
 app.set("view engine", "ejs");
 app.set("views", "views");
 
+// Session configuration
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || "your-secret-key-change-this",
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+    },
+  })
+);
+
+// Initialize Passport
+app.use(passport.initialize());
+app.use(passport.session());
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json()); // cursor-ai make this change: enable JSON body parsing for fetch requests
 app.use(express.static("public"));
 
-// Expose the currently active user id to all templates as `activeUserId`
+// Passport configuration for Google OAuth
+passport.use(
+  new GoogleStrategy(
+    {
+      clientID: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      callbackURL: process.env.GOOGLE_CALLBACK_URL || "http://localhost:3000/auth/google/callback",
+    },
+    async (accessToken, refreshToken, profile, done) => {
+      try {
+        // Check if user exists in database
+        const result = await db.query(
+          "SELECT * FROM users WHERE google_id = $1",
+          [profile.id]
+        );
+
+        if (result.rows.length > 0) {
+          // User exists, return user
+          return done(null, result.rows[0]);
+        } else {
+          // Create new user
+          const newUser = await db.query(
+            "INSERT INTO users (name, email, google_id) VALUES ($1, $2, $3) RETURNING *",
+            [profile.displayName, profile.emails[0].value, profile.id]
+          );
+          return done(null, newUser.rows[0]);
+        }
+      } catch (error) {
+        return done(error, null);
+      }
+    }
+  )
+);
+
+// Serialize user for session
+passport.serializeUser((user, done) => {
+  done(null, user.id);
+});
+
+// Deserialize user from session
+passport.deserializeUser(async (id, done) => {
+  try {
+    const result = await db.query("SELECT * FROM users WHERE id = $1", [id]);
+    done(null, result.rows[0]);
+  } catch (error) {
+    done(error, null);
+  }
+});
+
+// Middleware to check if user is authenticated
+function isAuthenticated(req, res, next) {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  res.redirect("/login");
+}
+
+// Expose the currently active user to all templates
 app.use((req, res, next) => {
-  res.locals.activeUserId = user_id;
+  res.locals.user = req.user || null;
+  res.locals.isAuthenticated = req.isAuthenticated();
   next();
 });
 
-async function allUsers() {
-  const users = await db.query("select * from users");
-  return users.rows;
-}
-
-async function userBooks() {
-  const books = await db.query("select * from books_studied where user_id=$1", [
-    user_id,
-  ]);
+async function allBooks() {
+  // Get all books with user information
+  const books = await db.query(
+    `SELECT b.*, u.name as owner_name, u.id as owner_id 
+     FROM books_studied b 
+     JOIN users u ON b.user_id = u.id 
+     ORDER BY b.curr_date DESC`
+  );
   return books.rows;
 }
 
-app.get("/", async (req, res) => {
-  try {
-    const users = await allUsers();
-    const currentUserBooks = await userBooks();
-    // console.log(users);
+// Authentication routes
+app.get("/login", (req, res) => {
+  res.render("login.ejs");
+});
 
-    // Render the home page with all users, current user's books, and active user id
+app.get("/auth/google",
+  passport.authenticate("google", { scope: ["profile", "email"] })
+);
+
+app.get("/auth/google/callback",
+  passport.authenticate("google", { failureRedirect: "/login" }),
+  (req, res) => {
+    // Set the active user_id to the logged-in user
+    user_id = req.user.id;
+    res.redirect("/");
+  }
+);
+
+app.get("/logout", (req, res) => {
+  req.logout((err) => {
+    if (err) {
+      console.error("Logout error:", err);
+    }
+    res.redirect("/login");
+  });
+});
+
+app.get("/", isAuthenticated, async (req, res) => {
+  try {
+    const allBooksData = await allBooks();
+
+    // Render the home page with all books
     res.render("index.ejs", {
-      user: users,
-      book: currentUserBooks,
-      activeUserId: user_id,
+      books: allBooksData,
+      currentUserId: req.user.id,
     });
   } catch (err) {
     console.error("Error loading home page:", err);
@@ -69,53 +171,20 @@ app.get("/", async (req, res) => {
   }
 });
 
-app.post("/add", async (req, res) => {
+// Users are created automatically via OAuth - no manual add user route needed
+
+// Users can't switch accounts - removed changeUser route
+
+app.get("/addBook", isAuthenticated, async (req, res) => {
   try {
-    const newUserName = req.body.newUser;
-    console.log(`new user name is ${newUserName} `);
-    try {
-      const result = await db.query(
-        "insert into users (name) values($1) returning id",
-        [newUserName]
-      );
-      user_id = result.rows[0].id;
-      res.render("addNewBooks.ejs");
-    } catch (err) {
-      console.log(err);
-      console.log("enter a unique name");
-    }
+    res.render("addNewBooks.ejs");
   } catch (err) {
     console.log(err);
   }
 });
 
-app.post("/changeUser", async (req, res) => {
+app.post("/newBook", isAuthenticated, async (req, res) => {
   try {
-    // cursor-ai make this change: read userId from JSON body and update active user
-    const newUserId = parseInt(req.body.userId, 10);
-    if (!Number.isFinite(newUserId)) {
-      return res.status(400).send("Invalid user id");
-    }
-    user_id = newUserId;
-    console.log("Active user switched to:", user_id);
-    // Respond without redirect; client will reload the page
-    res.sendStatus(204); // cursor-ai make this change
-  } catch (err) {
-    console.error("Error changing user:", err);
-  }
-});
-
-app.post("/addBook", async (req, res) => {
-  try {
-    res.render("addNewBooks.ejs");
-  } catch (err) {
-    console.log(err.body);
-  }
-});
-
-app.post("/newBook", async (req, res) => {
-  try {
-    const curruser = user_id;
     const title = req.body.title;
     const author = req.body.author;
     const about = req.body.about;
@@ -129,7 +198,7 @@ app.post("/newBook", async (req, res) => {
     try {
       const result = await db.query(
         "INSERT INTO books_studied (title,author,key,value,curr_date,ratings,about,user_id,url) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) returning id",
-        [title, author, key, value, curr_date, ratings, about, user_id, url]
+        [title, author, key, value, curr_date, ratings, about, req.user.id, url]
       );
       const bookId = result.rows[0].id;
       await db.query("INSERT INTO notes (notes, book_id) VALUES ($1, $2)", [notes, bookId]);
@@ -142,7 +211,7 @@ app.post("/newBook", async (req, res) => {
   }
 });
 
-app.post("/notes", async (req, res) => {
+app.post("/notes", isAuthenticated, async (req, res) => {
   const id = req.body.book_id;
   
   const result = await db.query("select notes from notes where book_id=$1", [id]);
@@ -158,7 +227,7 @@ app.post("/notes", async (req, res) => {
   }
 });
 
-app.post("/edit", async (req, res) => {
+app.post("/edit", isAuthenticated, async (req, res) => {
   try {
     const id = parseInt(req.body.book_id, 10);
     
@@ -170,6 +239,12 @@ app.post("/edit", async (req, res) => {
     }
     
     const bookData = bookResult.rows[0];
+    
+    // Check if the book belongs to the current user
+    if (bookData.user_id !== req.user.id) {
+      return res.status(403).send("You can only edit your own books.");
+    }
+    
     bookData.notes = notesResult.rows[0]?.notes || ""; 
 
     res.render("addNewBooks.ejs", {
@@ -181,9 +256,16 @@ app.post("/edit", async (req, res) => {
   }
 });
 
-app.post("/updateBook", async (req, res) => {
+app.post("/updateBook", isAuthenticated, async (req, res) => {
   try {
     const { title, author, about, notes, ratings, key, value, bookId } = req.body;
+    
+    // Check ownership before updating
+    const ownerCheck = await db.query("SELECT user_id FROM books_studied WHERE id = $1", [bookId]);
+    if (ownerCheck.rows.length === 0 || ownerCheck.rows[0].user_id !== req.user.id) {
+      return res.status(403).send("You can only update your own books.");
+    }
+    
     // Use Medium cover image (M) for updates as well; UI scales it down
     const url = `https://covers.openlibrary.org/b/${key}/${value}-M.jpg`;
     const curr_date = new Date();
@@ -209,9 +291,15 @@ app.post("/updateBook", async (req, res) => {
   }
 });
 
-app.post("/delete", async (req, res) => {
+app.post("/delete", isAuthenticated, async (req, res) => {
   try {
     const id = parseInt(req.body.book_id, 10);
+    
+    // Check ownership before deleting
+    const ownerCheck = await db.query("SELECT user_id FROM books_studied WHERE id = $1", [id]);
+    if (ownerCheck.rows.length === 0 || ownerCheck.rows[0].user_id !== req.user.id) {
+      return res.status(403).send("You can only delete your own books.");
+    }
     
     await db.query("DELETE FROM notes WHERE book_id=$1", [id]);
     

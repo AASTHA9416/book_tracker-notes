@@ -1,8 +1,188 @@
-<h1>Contact Us</h1>
-<h2>Hey i am aastha bansal </h2>
-<p>u can contact me </p>
-<ul>
-    <li>phone no.: 8307040946</li>
-    <li>Email address:<a href="aasthabansal741@gmail.com">aasthabansal741@gmail.com</a> </li>
-    <li>github profile:  <a href="https://github.com/AASTHA9416">AASTHA9416</a>   </li>
-</ul>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="main.css">
+    <title>Contact Us - Book Notes</title>
+    <style>
+        .contact-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        .contact-card {
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 24px;
+            padding: 48px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+        .contact-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, #8b5cf6 0%, #6366f1 100%);
+        }
+        .contact-card h1 {
+            font-size: 42px;
+            font-weight: 800;
+            margin: 0 0 16px 0;
+            background: linear-gradient(135deg, #a78bfa 0%, #c4b5fd 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .contact-card h2 {
+            font-size: 22px;
+            font-weight: 600;
+            color: #c4b5fd;
+            margin: 8px 0 24px 0;
+        }
+        .contact-card p {
+            font-size: 17px;
+            line-height: 1.8;
+            color: #d1d5db;
+            margin-bottom: 32px;
+        }
+        .contact-methods {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .contact-item {
+            display: flex;
+            align-items: center;
+            background: rgba(17, 24, 39, 0.6);
+            padding: 20px 24px;
+            border-radius: 16px;
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            transition: all 0.3s ease;
+        }
+        .contact-item:hover {
+            border-color: rgba(139, 92, 246, 0.4);
+            transform: translateX(8px);
+            background: rgba(17, 24, 39, 0.8);
+        }
+        .contact-icon {
+            font-size: 28px;
+            margin-right: 20px;
+            min-width: 40px;
+            text-align: center;
+        }
+        .contact-content {
+            flex: 1;
+        }
+        .contact-label {
+            font-size: 12px;
+            color: #a78bfa;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+        .contact-value {
+            font-size: 16px;
+            color: #e5e7eb;
+            font-weight: 500;
+        }
+        .contact-value a {
+            color: #c4b5fd;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        .contact-value a:hover {
+            color: #a78bfa;
+            text-decoration: underline;
+        }
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            margin-bottom: 24px;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+            transition: all 0.3s ease;
+        }
+        .back-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(139, 92, 246, 0.6);
+        }
+        .social-note {
+            margin-top: 32px;
+            padding: 20px;
+            background: rgba(139, 92, 246, 0.1);
+            border-radius: 12px;
+            border-left: 4px solid #8b5cf6;
+            color: #d1d5db;
+            font-size: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="contact-container">
+        <a href="/" class="back-button">← Back to Home</a>
+        
+        <div class="contact-card">
+            <h1>💬 Contact Us</h1>
+            <h2>Hey, I'm Aastha Bansal!</h2>
+            <p>
+                I'm the developer behind Book Notes. I'd love to hear from you! Whether you have questions, 
+                feedback, or just want to connect, feel free to reach out through any of these channels:
+            </p>
+
+            <div class="contact-methods">
+                <div class="contact-item">
+                    <div class="contact-icon">📧</div>
+                    <div class="contact-content">
+                        <div class="contact-label">Email</div>
+                        <div class="contact-value">
+                            <a href="mailto:aasthabansal741@gmail.com">aasthabansal741@gmail.com</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="contact-item">
+                    <div class="contact-icon">📱</div>
+                    <div class="contact-content">
+                        <div class="contact-label">Phone</div>
+                        <div class="contact-value">
+                            <a href="tel:+918307040946">+91 8307040946</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="contact-item">
+                    <div class="contact-icon">💻</div>
+                    <div class="contact-content">
+                        <div class="contact-label">GitHub</div>
+                        <div class="contact-value">
+                            <a href="https://github.com/AASTHA9416" target="_blank" rel="noopener noreferrer">
+                                github.com/AASTHA9416
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="social-note">
+                <strong>💡 Pro Tip:</strong> Found a bug or have a feature request? Feel free to open an issue 
+                on the GitHub repository. I'm always looking to improve Book Notes and would love your input!
+            </div>
+        </div>
+    </div>
+</body>
+</html>
